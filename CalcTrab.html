@@ -1,0 +1,1046 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CalcTrab - Calculadora Trabalhista Completa</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #1e3a8a 0%, #3730a3 50%, #581c87 100%);
+            min-height: 100vh;
+        }
+        .font-mono {
+            font-family: 'JetBrains Mono', monospace;
+        }
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        .tab-active {
+            background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
+            color: white;
+            box-shadow: 0 4px 15px rgba(59, 130, 246, 0.4);
+        }
+        .input-field {
+            transition: all 0.3s;
+        }
+        .input-field:focus {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(59, 130, 246, 0.15);
+        }
+        .result-card {
+            transition: all 0.3s;
+        }
+        .result-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+        }
+        .money-positive {
+            color: #059669;
+        }
+        .money-negative {
+            color: #dc2626;
+        }
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-slide-in {
+            animation: slideIn 0.4s ease-out;
+        }
+    </style>
+<base target="_blank">
+</head>
+<body class="text-slate-800 pb-20">
+
+    <!-- Header -->
+    <nav class="glass-panel sticky top-0 z-50 border-b border-white/20 shadow-lg">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <div class="flex items-center space-x-3">
+                    <div class="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-xl flex items-center justify-center text-white font-bold text-xl shadow-lg">
+                        <i class="fas fa-calculator"></i>
+                    </div>
+                    <div>
+                        <h1 class="text-xl font-bold text-slate-800">CalcTrab</h1>
+                        <p class="text-xs text-slate-500">Calculadora Trabalhista Profissional</p>
+                    </div>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <button onclick="window.print()" class="bg-slate-800 hover:bg-slate-900 text-white px-4 py-2 rounded-lg text-sm font-medium flex items-center transition-all hover:scale-105">
+                        <i class="fas fa-print mr-2"></i>Imprimir/Salvar PDF
+                    </button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        
+        <!-- Calculator Tabs -->
+        <div class="glass-panel rounded-2xl p-2 mb-8 shadow-xl">
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-2">
+                <button onclick="switchTab('rescisao')" id="tab-rescisao" class="tab-active py-3 px-4 rounded-xl font-semibold text-sm transition-all flex flex-col items-center gap-1">
+                    <i class="fas fa-file-signature text-lg"></i>
+                    <span>Rescisão</span>
+                </button>
+                <button onclick="switchTab('ferias')" id="tab-ferias" class="py-3 px-4 rounded-xl font-semibold text-sm text-slate-600 hover:bg-slate-100 transition-all flex flex-col items-center gap-1">
+                    <i class="fas fa-umbrella-beach text-lg"></i>
+                    <span>Férias</span>
+                </button>
+                <button onclick="switchTab('decimo')" id="tab-decimo" class="py-3 px-4 rounded-xl font-semibold text-sm text-slate-600 hover:bg-slate-100 transition-all flex flex-col items-center gap-1">
+                    <i class="fas fa-gift text-lg"></i>
+                    <span>13º Salário</span>
+                </button>
+                <button onclick="switchTab('folha')" id="tab-folha" class="py-3 px-4 rounded-xl font-semibold text-sm text-slate-600 hover:bg-slate-100 transition-all flex flex-col items-center gap-1">
+                    <i class="fas fa-money-bill-wave text-lg"></i>
+                    <span>Folha</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Rescisão Calculator -->
+        <div id="calc-rescisao" class="calc-section animate-slide-in">
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                
+                <!-- Input Form -->
+                <div class="lg:col-span-1 space-y-6">
+                    <div class="glass-panel rounded-2xl p-6 shadow-lg">
+                        <h3 class="font-bold text-lg mb-4 flex items-center text-slate-800">
+                            <i class="fas fa-user-tie text-blue-500 mr-2"></i>
+                            Dados do Funcionário
+                        </h3>
+                        
+                        <div class="space-y-4">
+                            <div>
+                                <label class="block text-sm font-medium text-slate-700 mb-1">Salário Bruto (R$) *</label>
+                                <input type="number" id="res-salario" class="input-field w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none font-mono text-lg" placeholder="0,00" step="0.01">
+                            </div>
+                            
+                            <div class="grid grid-cols-2 gap-3">
+                                <div>
+                                    <label class="block text-sm font-medium text-slate-700 mb-1">Data Admissão *</label>
+                                    <input type="date" id="res-admissao" class="input-field w-full px-3 py-2 rounded-xl border border-slate-200 focus:border-blue-500 outline-none text-sm">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-slate-700 mb-1">Data Demissão *</label>
+                                    <input type="date" id="res-demissao" class="input-field w-full px-3 py-2 rounded-xl border border-slate-200 focus:border-blue-500 outline-none text-sm">
+                                </div>
+                            </div>
+
+                            <div>
+                                <label class="block text-sm font-medium text-slate-700 mb-1">Tipo de Rescisão</label>
+                                <select id="res-tipo" class="input-field w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-blue-500 outline-none bg-white">
+                                    <option value="sem-justa">Sem Justa Causa</option>
+                                    <option value="com-justa">Com Justa Causa</option>
+                                    <option value="pedido">Pedido de Demissão</option>
+                                    <option value="acordo">Acordo Mútuo</option>
+                                    <option value="contrato">Fim de Contrato</option>
+                                </select>
+                            </div>
+
+                            <div class="space-y-2 bg-slate-50 p-3 rounded-xl">
+                                <label class="flex items-center cursor-pointer">
+                                    <input type="checkbox" id="res-aviso-previo" class="w-4 h-4 text-blue-600 rounded focus:ring-blue-500">
+                                    <span class="ml-2 text-sm text-slate-700">Aviso Prévio Trabalhado</span>
+                                </label>
+                                <label class="flex items-center cursor-pointer">
+                                    <input type="checkbox" id="res-ferias-vencidas" class="w-4 h-4 text-blue-600 rounded focus:ring-blue-500">
+                                    <span class="ml-2 text-sm text-slate-700">Possui Férias Vencidas</span>
+                                </label>
+                                <label class="flex items-center cursor-pointer">
+                                    <input type="checkbox" id="res-saldo-ferias" class="w-4 h-4 text-blue-600 rounded focus:ring-blue-500" checked>
+                                    <span class="ml-2 text-sm text-slate-700">Saldo de Férias Proporcionais</span>
+                                </label>
+                            </div>
+
+                            <div>
+                                <label class="block text-sm font-medium text-slate-700 mb-1">Dependentes (IRRF)</label>
+                                <input type="number" id="res-dependentes" class="input-field w-full px-4 py-2 rounded-xl border border-slate-200 focus:border-blue-500 outline-none" min="0" value="0">
+                            </div>
+
+                            <button onclick="calcularRescisao()" class="w-full py-4 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white rounded-xl font-bold text-lg shadow-lg shadow-blue-500/30 transition-all hover:scale-[1.02] active:scale-95">
+                                <i class="fas fa-calculator mr-2"></i>Calcular Rescisão
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Quick Info -->
+                    <div class="glass-panel rounded-2xl p-4 shadow-md bg-amber-50 border-amber-200">
+                        <h4 class="font-bold text-amber-800 mb-2 text-sm flex items-center">
+                            <i class="fas fa-info-circle mr-2"></i>Dica Rápida
+                        </h4>
+                        <p class="text-xs text-amber-700 leading-relaxed" id="res-dica">
+                            Em demissão sem justa causa, o empregado tem direito a 40% de multa sobre o saldo do FGTS.
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Results -->
+                <div class="lg:col-span-2">
+                    <div id="res-resultado" class="hidden space-y-4">
+                        <!-- Summary Cards -->
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <div class="result-card bg-white rounded-2xl p-6 shadow-lg border border-emerald-100">
+                                <div class="text-sm text-slate-500 mb-1">Total a Receber</div>
+                                <div class="text-3xl font-bold money-positive font-mono" id="res-total-receber">R$ 0,00</div>
+                                <div class="text-xs text-emerald-600 mt-1"><i class="fas fa-arrow-up mr-1"></i>Proventos</div>
+                            </div>
+                            <div class="result-card bg-white rounded-2xl p-6 shadow-lg border border-rose-100">
+                                <div class="text-sm text-slate-500 mb-1">Total a Pagar</div>
+                                <div class="text-3xl font-bold money-negative font-mono" id="res-total-pagar">R$ 0,00</div>
+                                <div class="text-xs text-rose-600 mt-1"><i class="fas fa-arrow-down mr-1"></i>Descontos</div>
+                            </div>
+                            <div class="result-card bg-gradient-to-br from-blue-500 to-purple-600 rounded-2xl p-6 shadow-lg text-white">
+                                <div class="text-sm text-blue-100 mb-1">Valor Líquido</div>
+                                <div class="text-3xl font-bold font-mono" id="res-total-liquido">R$ 0,00</div>
+                                <div class="text-xs text-blue-200 mt-1">Depósito em conta</div>
+                            </div>
+                        </div>
+
+                        <!-- Detailed Breakdown -->
+                        <div class="glass-panel rounded-2xl p-6 shadow-lg">
+                            <h3 class="font-bold text-lg mb-4 flex items-center">
+                                <i class="fas fa-list-alt text-blue-500 mr-2"></i>
+                                Detalhamento Completo
+                            </h3>
+                            
+                            <div class="space-y-3" id="res-detalhamento">
+                                <!-- Generated by JS -->
+                            </div>
+
+                            <div class="mt-6 pt-6 border-t border-slate-200">
+                                <h4 class="font-bold text-sm text-slate-700 mb-3">Resumo por Categoria</h4>
+                                <div class="grid grid-cols-2 md:grid-cols-4 gap-3 text-center">
+                                    <div class="bg-slate-50 rounded-lg p-3">
+                                        <div class="text-xs text-slate-500">Saldo Salário</div>
+                                        <div class="font-bold text-slate-700 font-mono" id="res-resumo-salario">R$ 0,00</div>
+                                    </div>
+                                    <div class="bg-slate-50 rounded-lg p-3">
+                                        <div class="text-xs text-slate-500">13º Proporcional</div>
+                                        <div class="font-bold text-slate-700 font-mono" id="res-resumo-decimo">R$ 0,00</div>
+                                    </div>
+                                    <div class="bg-slate-50 rounded-lg p-3">
+                                        <div class="text-xs text-slate-500">Férias + 1/3</div>
+                                        <div class="font-bold text-slate-700 font-mono" id="res-resumo-ferias">R$ 0,00</div>
+                                    </div>
+                                    <div class="bg-slate-50 rounded-lg p-3">
+                                        <div class="text-xs text-slate-500">Aviso Prévio</div>
+                                        <div class="font-bold text-slate-700 font-mono" id="res-resumo-aviso">R$ 0,00</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- FGTS Info -->
+                        <div class="glass-panel rounded-2xl p-6 shadow-lg bg-gradient-to-r from-emerald-50 to-teal-50 border-emerald-200">
+                            <h4 class="font-bold text-emerald-800 mb-3 flex items-center">
+                                <i class="fas fa-piggy-bank text-emerald-600 mr-2"></i>
+                                Informações do FGTS
+                            </h4>
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+                                <div>
+                                    <span class="text-slate-600">Saldo Estimado:</span>
+                                    <div class="font-bold text-emerald-700 font-mono text-lg" id="res-fgts-saldo">R$ 0,00</div>
+                                </div>
+                                <div>
+                                    <span class="text-slate-600">Multa Rescisória:</span>
+                                    <div class="font-bold text-emerald-700 font-mono text-lg" id="res-fgts-multa">R$ 0,00</div>
+                                    <div class="text-xs text-emerald-600" id="res-fgts-percentual">(40%)</div>
+                                </div>
+                                <div>
+                                    <span class="text-slate-600">Total a Sacar:</span>
+                                    <div class="font-bold text-emerald-700 font-mono text-lg" id="res-fgts-total">R$ 0,00</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Empty State -->
+                    <div id="res-empty" class="glass-panel rounded-2xl p-12 text-center shadow-lg">
+                        <div class="w-24 h-24 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                            <i class="fas fa-calculator text-4xl text-slate-400"></i>
+                        </div>
+                        <h3 class="text-xl font-bold text-slate-700 mb-2">Preencha os dados ao lado</h3>
+                        <p class="text-slate-500">Informe o salário, datas e tipo de rescisão para calcular todos os valores.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Férias Calculator -->
+        <div id="calc-ferias" class="calc-section hidden animate-slide-in">
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                <div class="lg:col-span-1">
+                    <div class="glass-panel rounded-2xl p-6 shadow-lg">
+                        <h3 class="font-bold text-lg mb-4 flex items-center text-slate-800">
+                            <i class="fas fa-umbrella-beach text-emerald-500 mr-2"></i>
+                            Cálculo de Férias
+                        </h3>
+                        
+                        <div class="space-y-4">
+                            <div>
+                                <label class="block text-sm font-medium text-slate-700 mb-1">Salário Bruto (R$) *</label>
+                                <input type="number" id="fer-salario" class="input-field w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-emerald-500 outline-none font-mono text-lg" placeholder="0,00" step="0.01">
+                            </div>
+                            
+                            <div>
+                                <label class="block text-sm font-medium text-slate-700 mb-1">Dias de Férias</label>
+                                <select id="fer-dias" class="input-field w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-emerald-500 outline-none bg-white">
+                                    <option value="30">30 dias (Completo)</option>
+                                    <option value="20">20 dias (Venda 1/3)</option>
+                                    <option value="15">15 dias (Venda metade)</option>
+                                    <option value="10">10 dias (Venda 2/3)</option>
+                                    <option value="6">6 dias (Venda 4/5)</option>
+                                </select>
+                            </div>
+
+                            <div class="space-y-2 bg-slate-50 p-3 rounded-xl">
+                                <label class="flex items-center cursor-pointer">
+                                    <input type="checkbox" id="fer-venda" class="w-4 h-4 text-emerald-600 rounded focus:ring-emerald-500">
+                                    <span class="ml-2 text-sm text-slate-700">Vender 1/3 (Pecúlio)</span>
+                                </label>
+                                <label class="flex items-center cursor-pointer">
+                                    <input type="checkbox" id="fer-abono" class="w-4 h-4 text-emerald-600 rounded focus:ring-emerald-500">
+                                    <span class="ml-2 text-sm text-slate-700">Abono Pecuniário (Venda)</span>
+                                </label>
+                                <label class="flex items-center cursor-pointer">
+                                    <input type="checkbox" id="fer-adiantar" class="w-4 h-4 text-emerald-600 rounded focus:ring-emerald-500">
+                                    <span class="ml-2 text-sm text-slate-700">Adiantar 1ª Parcela do 13º</span>
+                                </label>
+                            </div>
+
+                            <div>
+                                <label class="block text-sm font-medium text-slate-700 mb-1">Média de Horas Extras (últimos 12 meses)</label>
+                                <input type="number" id="fer-he" class="input-field w-full px-4 py-2 rounded-xl border border-slate-200 focus:border-emerald-500 outline-none font-mono" placeholder="0,00" step="0.01">
+                            </div>
+
+                            <div>
+                                <label class="block text-sm font-medium text-slate-700 mb-1">Média de Comissões/Bônus</label>
+                                <input type="number" id="fer-comissoes" class="input-field w-full px-4 py-2 rounded-xl border border-slate-200 focus:border-emerald-500 outline-none font-mono" placeholder="0,00" step="0.01">
+                            </div>
+
+                            <button onclick="calcularFerias()" class="w-full py-4 bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white rounded-xl font-bold text-lg shadow-lg shadow-emerald-500/30 transition-all hover:scale-[1.02] active:scale-95">
+                                <i class="fas fa-calculator mr-2"></i>Calcular Férias
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="lg:col-span-2">
+                    <div id="fer-resultado" class="hidden space-y-4">
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <div class="result-card bg-white rounded-2xl p-6 shadow-lg border border-emerald-100">
+                                <div class="text-sm text-slate-500 mb-1">Total Bruto</div>
+                                <div class="text-2xl font-bold money-positive font-mono" id="fer-total-bruto">R$ 0,00</div>
+                            </div>
+                            <div class="result-card bg-white rounded-2xl p-6 shadow-lg border border-rose-100">
+                                <div class="text-sm text-slate-500 mb-1">Descontos (INSS/IRRF)</div>
+                                <div class="text-2xl font-bold money-negative font-mono" id="fer-total-descontos">R$ 0,00</div>
+                            </div>
+                            <div class="result-card bg-gradient-to-br from-emerald-500 to-teal-600 rounded-2xl p-6 shadow-lg text-white">
+                                <div class="text-sm text-emerald-100 mb-1">Valor Líquido</div>
+                                <div class="text-2xl font-bold font-mono" id="fer-total-liquido">R$ 0,00</div>
+                            </div>
+                        </div>
+
+                        <div class="glass-panel rounded-2xl p-6 shadow-lg">
+                            <h3 class="font-bold text-lg mb-4">Composição do Cálculo</h3>
+                            <div class="space-y-3" id="fer-detalhamento"></div>
+                        </div>
+                    </div>
+                    <div id="fer-empty" class="glass-panel rounded-2xl p-12 text-center shadow-lg">
+                        <i class="fas fa-umbrella-beach text-6xl text-slate-300 mb-4"></i>
+                        <p class="text-slate-500">Preencha os dados para calcular suas férias</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 13º Calculator -->
+        <div id="calc-decimo" class="calc-section hidden animate-slide-in">
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                <div class="lg:col-span-1">
+                    <div class="glass-panel rounded-2xl p-6 shadow-lg">
+                        <h3 class="font-bold text-lg mb-4 flex items-center text-slate-800">
+                            <i class="fas fa-gift text-amber-500 mr-2"></i>
+                            13º Salário
+                        </h3>
+                        
+                        <div class="space-y-4">
+                            <div>
+                                <label class="block text-sm font-medium text-slate-700 mb-1">Salário Bruto (R$) *</label>
+                                <input type="number" id="dec-salario" class="input-field w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-amber-500 outline-none font-mono text-lg" placeholder="0,00" step="0.01">
+                            </div>
+                            
+                            <div>
+                                <label class="block text-sm font-medium text-slate-700 mb-1">Mês de Início (no ano)</label>
+                                <select id="dec-mes-inicio" class="input-field w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-amber-500 outline-none bg-white">
+                                    <option value="1">Janeiro</option>
+                                    <option value="2">Fevereiro</option>
+                                    <option value="3">Março</option>
+                                    <option value="4">Abril</option>
+                                    <option value="5">Maio</option>
+                                    <option value="6">Junho</option>
+                                    <option value="7">Julho</option>
+                                    <option value="8">Agosto</option>
+                                    <option value="9">Setembro</option>
+                                    <option value="10">Outubro</option>
+                                    <option value="11">Novembro</option>
+                                    <option value="12">Dezembro</option>
+                                </select>
+                            </div>
+
+                            <div>
+                                <label class="block text-sm font-medium text-slate-700 mb-1">Mês de Cálculo</label>
+                                <select id="dec-mes-calc" class="input-field w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-amber-500 outline-none bg-white">
+                                    <option value="12">Dezembro (Integral)</option>
+                                    <option value="11">Novembro (1ª Parcela)</option>
+                                    <option value="5">Maio (1ª Parcela)</option>
+                                </select>
+                            </div>
+
+                            <div>
+                                <label class="block text-sm font-medium text-slate-700 mb-1">Dependentes (IRRF)</label>
+                                <input type="number" id="dec-dependentes" class="input-field w-full px-4 py-2 rounded-xl border border-slate-200 focus:border-amber-500 outline-none" min="0" value="0">
+                            </div>
+
+                            <button onclick="calcularDecimo()" class="w-full py-4 bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700 text-white rounded-xl font-bold text-lg shadow-lg shadow-amber-500/30 transition-all hover:scale-[1.02] active:scale-95">
+                                <i class="fas fa-calculator mr-2"></i>Calcular 13º
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="lg:col-span-2">
+                    <div id="dec-resultado" class="hidden space-y-4">
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <div class="result-card bg-white rounded-2xl p-6 shadow-lg border border-amber-100">
+                                <div class="text-sm text-slate-500 mb-1">Valor Bruto</div>
+                                <div class="text-2xl font-bold money-positive font-mono" id="dec-bruto">R$ 0,00</div>
+                                <div class="text-xs text-slate-400 mt-1" id="dec-proporcional"></div>
+                            </div>
+                            <div class="result-card bg-white rounded-2xl p-6 shadow-lg border border-rose-100">
+                                <div class="text-sm text-slate-500 mb-1">Descontos</div>
+                                <div class="text-2xl font-bold money-negative font-mono" id="dec-descontos">R$ 0,00</div>
+                            </div>
+                            <div class="result-card bg-gradient-to-br from-amber-500 to-orange-600 rounded-2xl p-6 shadow-lg text-white">
+                                <div class="text-sm text-amber-100 mb-1">Valor Líquido</div>
+                                <div class="text-2xl font-bold font-mono" id="dec-liquido">R$ 0,00</div>
+                            </div>
+                        </div>
+
+                        <div class="glass-panel rounded-2xl p-6 shadow-lg">
+                            <h3 class="font-bold text-lg mb-4">Detalhamento</h3>
+                            <div class="space-y-2" id="dec-detalhamento"></div>
+                        </div>
+                    </div>
+                    <div id="dec-empty" class="glass-panel rounded-2xl p-12 text-center shadow-lg">
+                        <i class="fas fa-gift text-6xl text-slate-300 mb-4"></i>
+                        <p class="text-slate-500">Preencha os dados para calcular o 13º</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Folha Calculator -->
+        <div id="calc-folha" class="calc-section hidden animate-slide-in">
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                <div class="lg:col-span-1">
+                    <div class="glass-panel rounded-2xl p-6 shadow-lg">
+                        <h3 class="font-bold text-lg mb-4 flex items-center text-slate-800">
+                            <i class="fas fa-money-bill-wave text-blue-500 mr-2"></i>
+                            Simulador de Folha
+                        </h3>
+                        
+                        <div class="space-y-4">
+                            <div>
+                                <label class="block text-sm font-medium text-slate-700 mb-1">Salário Base (R$) *</label>
+                                <input type="number" id="fol-salario" class="input-field w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-blue-500 outline-none font-mono text-lg" placeholder="0,00" step="0.01">
+                            </div>
+                            
+                            <div class="grid grid-cols-2 gap-3">
+                                <div>
+                                    <label class="block text-sm font-medium text-slate-700 mb-1">Horas Extras (50%)</label>
+                                    <input type="number" id="fol-he-50" class="input-field w-full px-3 py-2 rounded-xl border border-slate-200 focus:border-blue-500 outline-none font-mono" placeholder="Qtd" min="0">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-slate-700 mb-1">Horas Extras (100%)</label>
+                                    <input type="number" id="fol-he-100" class="input-field w-full px-3 py-2 rounded-xl border border-slate-200 focus:border-blue-500 outline-none font-mono" placeholder="Qtd" min="0">
+                                </div>
+                            </div>
+
+                            <div>
+                                <label class="block text-sm font-medium text-slate-700 mb-1">Adicionais (%)</label>
+                                <div class="grid grid-cols-2 gap-2">
+                                    <input type="number" id="fol-insalubridade" class="input-field w-full px-3 py-2 rounded-xl border border-slate-200 focus:border-blue-500 outline-none font-mono text-sm" placeholder="Insalubridade %" min="0" max="40">
+                                    <input type="number" id="fol-periculosidade" class="input-field w-full px-3 py-2 rounded-xl border border-slate-200 focus:border-blue-500 outline-none font-mono text-sm" placeholder="Periculosidade %" min="0" max="30">
+                                </div>
+                            </div>
+
+                            <div>
+                                <label class="block text-sm font-medium text-slate-700 mb-1">Outros Proventos</label>
+                                <input type="number" id="fol-outros" class="input-field w-full px-4 py-2 rounded-xl border border-slate-200 focus:border-blue-500 outline-none font-mono" placeholder="0,00" step="0.01">
+                            </div>
+
+                            <div>
+                                <label class="block text-sm font-medium text-slate-700 mb-1">Dependentes (IRRF)</label>
+                                <input type="number" id="fol-dependentes" class="input-field w-full px-4 py-2 rounded-xl border border-slate-200 focus:border-blue-500 outline-none" min="0" value="0">
+                            </div>
+
+                            <button onclick="calcularFolha()" class="w-full py-4 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white rounded-xl font-bold text-lg shadow-lg shadow-blue-500/30 transition-all hover:scale-[1.02] active:scale-95">
+                                <i class="fas fa-calculator mr-2"></i>Simular Folha
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="lg:col-span-2">
+                    <div id="fol-resultado" class="hidden space-y-4">
+                        <div class="glass-panel rounded-2xl p-6 shadow-lg bg-white">
+                            <div class="flex justify-between items-center mb-6 border-b border-slate-200 pb-4">
+                                <div>
+                                    <h2 class="text-2xl font-bold text-slate-800">Recibo de Pagamento</h2>
+                                    <p class="text-sm text-slate-500">Simulação de folha mensal</p>
+                                </div>
+                                <div class="text-right">
+                                    <div class="text-sm text-slate-500">Referência</div>
+                                    <div class="font-bold text-slate-700" id="fol-mes-ano"></div>
+                                </div>
+                            </div>
+
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                                <!-- Proventos -->
+                                <div>
+                                    <h4 class="font-bold text-emerald-700 mb-3 flex items-center">
+                                        <i class="fas fa-plus-circle mr-2"></i>Proventos
+                                    </h4>
+                                    <div class="space-y-2 text-sm" id="fol-proventos-lista"></div>
+                                    <div class="mt-4 pt-3 border-t border-slate-200 flex justify-between font-bold text-emerald-700">
+                                        <span>Total Proventos</span>
+                                        <span class="font-mono" id="fol-total-proventos">R$ 0,00</span>
+                                    </div>
+                                </div>
+
+                                <!-- Descontos -->
+                                <div>
+                                    <h4 class="font-bold text-rose-700 mb-3 flex items-center">
+                                        <i class="fas fa-minus-circle mr-2"></i>Descontos
+                                    </h4>
+                                    <div class="space-y-2 text-sm" id="fol-descontos-lista"></div>
+                                    <div class="mt-4 pt-3 border-t border-slate-200 flex justify-between font-bold text-rose-700">
+                                        <span>Total Descontos</span>
+                                        <span class="font-mono" id="fol-total-descontos">R$ 0,00</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="mt-6 pt-6 border-t-2 border-slate-300">
+                                <div class="flex justify-between items-center">
+                                    <div>
+                                        <div class="text-sm text-slate-500">Salário Base</div>
+                                        <div class="font-bold text-slate-700 font-mono" id="fol-base-final"></div>
+                                    </div>
+                                    <div class="text-right">
+                                        <div class="text-sm text-slate-500">Valor Líquido a Receber</div>
+                                        <div class="text-3xl font-bold text-blue-600 font-mono" id="fol-liquido-final"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Resumo Tributário -->
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <div class="bg-blue-50 rounded-xl p-4 border border-blue-200">
+                                <div class="text-xs text-blue-600 font-semibold uppercase">Base INSS</div>
+                                <div class="text-lg font-bold text-blue-800 font-mono mt-1" id="fol-base-inss">R$ 0,00</div>
+                                <div class="text-xs text-blue-600 mt-1" id="fol-aliquota-inss">Alíquota: 0%</div>
+                            </div>
+                            <div class="bg-purple-50 rounded-xl p-4 border border-purple-200">
+                                <div class="text-xs text-purple-600 font-semibold uppercase">Base IRRF</div>
+                                <div class="text-lg font-bold text-purple-800 font-mono mt-1" id="fol-base-irrf">R$ 0,00</div>
+                                <div class="text-xs text-purple-600 mt-1" id="fol-aliquota-irrf">Alíquota: 0%</div>
+                            </div>
+                            <div class="bg-emerald-50 rounded-xl p-4 border border-emerald-200">
+                                <div class="text-xs text-emerald-600 font-semibold uppercase">FGTS a Recolher</div>
+                                <div class="text-lg font-bold text-emerald-800 font-mono mt-1" id="fol-fgts">R$ 0,00</div>
+                                <div class="text-xs text-emerald-600 mt-1">8% do salário</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div id="fol-empty" class="glass-panel rounded-2xl p-12 text-center shadow-lg">
+                        <i class="fas fa-money-bill-wave text-6xl text-slate-300 mb-4"></i>
+                        <p class="text-slate-500">Preencha os dados para simular a folha de pagamento</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Footer -->
+    <footer class="glass-panel mt-12 border-t border-white/20 py-8">
+        <div class="max-w-7xl mx-auto px-4 text-center text-slate-600 text-sm">
+            <p class="mb-2"><strong>CalcTrab v1.0</strong> - Calculadora Trabalhista para fins educacionais</p>
+            <p>As alíquotas e tabelas estão atualizadas conforme legislação vigente (2024).</p>
+            <p class="mt-2 text-xs text-slate-400">Sempre consulte um contador ou advogado trabalhista para cálculos oficiais.</p>
+        </div>
+    </footer>
+
+    <script>
+        // Tab Switching
+        function switchTab(tab) {
+            // Hide all sections
+            document.querySelectorAll('.calc-section').forEach(s => s.classList.add('hidden'));
+            document.querySelectorAll('[id^="tab-"]').forEach(t => {
+                t.classList.remove('tab-active');
+                t.classList.add('text-slate-600', 'hover:bg-slate-100');
+            });
+            
+            // Show selected
+            document.getElementById(`calc-${tab}`).classList.remove('hidden');
+            document.getElementById(`tab-${tab}`).classList.add('tab-active');
+            document.getElementById(`tab-${tab}`).classList.remove('text-slate-600', 'hover:bg-slate-100');
+        }
+
+        // Format money
+        function formatMoney(value) {
+            return new Intl.NumberFormat('pt-BR', {
+                style: 'currency',
+                currency: 'BRL'
+            }).format(value || 0);
+        }
+
+        // Calculate months between dates
+        function monthsBetween(d1, d2) {
+            const date1 = new Date(d1);
+            const date2 = new Date(d2);
+            return Math.max(1, (date2.getFullYear() - date1.getFullYear()) * 12 + (date2.getMonth() - date1.getMonth()) + 1);
+        }
+
+        // INSS Calculation 2024
+        function calcularINSS(base) {
+            if (base <= 1412.00) return base * 0.075;
+            if (base <= 2666.68) return base * 0.09 - 21.18;
+            if (base <= 4000.03) return base * 0.12 - 101.18;
+            if (base <= 7786.02) return base * 0.14 - 181.18;
+            return 908.85; // Teto
+        }
+
+        function getAliquotaINSS(base) {
+            if (base <= 1412.00) return 7.5;
+            if (base <= 2666.68) return 9;
+            if (base <= 4000.03) return 12;
+            if (base <= 7786.02) return 14;
+            return 14;
+        }
+
+        // IRRF Calculation 2024
+        function calcularIRRF(base, dependentes = 0) {
+            const deducaoDependente = 189.59 * dependentes;
+            const baseCalc = Math.max(0, base - deducaoDependente);
+            
+            if (baseCalc <= 2259.20) return 0;
+            if (baseCalc <= 2826.65) return baseCalc * 0.075 - 169.44;
+            if (baseCalc <= 3751.05) return baseCalc * 0.15 - 381.44;
+            if (baseCalc <= 4664.68) return baseCalc * 0.225 - 662.77;
+            return baseCalc * 0.275 - 896.00;
+        }
+
+        function getAliquotaIRRF(base, dependentes = 0) {
+            const deducaoDependente = 189.59 * dependentes;
+            const baseCalc = Math.max(0, base - deducaoDependente);
+            
+            if (baseCalc <= 2259.20) return 0;
+            if (baseCalc <= 2826.65) return 7.5;
+            if (baseCalc <= 3751.05) return 15;
+            if (baseCalc <= 4664.68) return 22.5;
+            return 27.5;
+        }
+
+        // Rescisão Calculator
+        function calcularRescisao() {
+            const salario = parseFloat(document.getElementById('res-salario').value) || 0;
+            const dataAdmissao = document.getElementById('res-admissao').value;
+            const dataDemissao = document.getElementById('res-demissao').value;
+            const tipo = document.getElementById('res-tipo').value;
+            const avisoPrevio = document.getElementById('res-aviso-previo').checked;
+            const feriasVencidas = document.getElementById('res-ferias-vencidas').checked;
+            const saldoFerias = document.getElementById('res-saldo-ferias').checked;
+            const dependentes = parseInt(document.getElementById('res-dependentes').value) || 0;
+
+            if (!salario || !dataAdmissao || !dataDemissao) {
+                alert('Preencha todos os campos obrigatórios: Salário, Data de Admissão e Data de Demissão!');
+                return;
+            }
+
+            const mesesTrabalhados = monthsBetween(dataAdmissao, dataDemissao);
+            const mesesAno = Math.min(12, Math.max(1, new Date(dataDemissao).getMonth() - new Date(dataAdmissao).getMonth() + 1));
+            const diaDemissao = new Date(dataDemissao).getDate();
+            const diasNoMes = new Date(new Date(dataDemissao).getFullYear(), new Date(dataDemissao).getMonth() + 1, 0).getDate();
+
+            let proventos = [];
+            let descontos = [];
+            let totalProventos = 0;
+            let totalDescontos = 0;
+
+            // 1. Saldo de Salário
+            const saldoSalario = (salario / 30) * Math.min(diaDemissao, 30);
+            proventos.push({ nome: 'Saldo de Salário', valor: saldoSalario, desc: `${Math.min(diaDemissao, 30)} dias trabalhados` });
+            totalProventos += saldoSalario;
+
+            // 2. Aviso Prévio
+            let valorAviso = 0;
+            if (tipo === 'sem-justa' || tipo === 'acordo') {
+                valorAviso = salario;
+                const tipoAviso = avisoPrevio ? 'Trabalhado' : 'Indenizado';
+                proventos.push({ nome: `Aviso Prévio ${tipoAviso}`, valor: valorAviso, desc: '30 dias' });
+                totalProventos += valorAviso;
+            } else if (tipo === 'pedido' && !avisoPrevio) {
+                descontos.push({ nome: 'Aviso Prévio Não Cumprido', valor: salario, desc: 'Desconto de 30 dias' });
+                totalDescontos += salario;
+            }
+
+            // 3. 13º Proporcional
+            if (tipo !== 'com-justa') {
+                const decimoProporcional = (salario / 12) * mesesAno;
+                proventos.push({ nome: '13º Salário Proporcional', valor: decimoProporcional, desc: `${mesesAno}/12 avos` });
+                totalProventos += decimoProporcional;
+            }
+
+            // 4. Férias Vencidas
+            if (feriasVencidas && tipo !== 'com-justa') {
+                const feriasVencValor = salario + (salario / 3);
+                proventos.push({ nome: 'Férias Vencidas + 1/3', valor: feriasVencValor, desc: '1 período aquisitivo completo' });
+                totalProventos += feriasVencValor;
+            }
+
+            // 5. Férias Proporcionais
+            if (saldoFerias && tipo !== 'com-justa') {
+                const mesesFerias = Math.min(12, mesesTrabalhados % 12 || 12);
+                const feriasProp = ((salario / 12) * mesesFerias);
+                const tercoFerias = feriasProp / 3;
+                proventos.push({ nome: 'Férias Proporcionais + 1/3', valor: feriasProp + tercoFerias, desc: `${mesesFerias}/12 avos` });
+                totalProventos += feriasProp + tercoFerias;
+            }
+
+            // FGTS e multa
+            let percentualMulta = 0;
+            if (tipo === 'sem-justa') percentualMulta = 40;
+            else if (tipo === 'acordo') percentualMulta = 20;
+            
+            const saldoFGTSEstimado = salario * 0.08 * (mesesTrabalhados / 12) * 12;
+            const multaFGTS = saldoFGTSEstimado * (percentualMulta / 100);
+
+            // Descontos INSS e IRRF (apenas para valores rescisórios tributáveis)
+            const baseINSS = totalProventos;
+            const inss = calcularINSS(baseINSS);
+            descontos.push({ nome: 'INSS', valor: inss, desc: `Alíquota ${getAliquotaINSS(baseINSS)}%` });
+            totalDescontos += inss;
+
+            const baseIRRF = baseINSS - inss;
+            const irrf = calcularIRRF(baseIRRF, dependentes);
+            if (irrf > 0) {
+                descontos.push({ nome: 'IRRF', valor: irrf, desc: `Alíquota ${getAliquotaIRRF(baseIRRF, dependentes)}%` });
+                totalDescontos += irrf;
+            }
+
+            // Render results
+            document.getElementById('res-empty').classList.add('hidden');
+            document.getElementById('res-resultado').classList.remove('hidden');
+
+            document.getElementById('res-total-receber').textContent = formatMoney(totalProventos);
+            document.getElementById('res-total-pagar').textContent = formatMoney(totalDescontos);
+            document.getElementById('res-total-liquido').textContent = formatMoney(totalProventos - totalDescontos);
+
+            // Detalhamento
+            const detalhamento = document.getElementById('res-detalhamento');
+            detalhamento.innerHTML = `
+                <div class="space-y-2">
+                    ${proventos.map(p => `
+                        <div class="flex justify-between items-center p-3 bg-emerald-50 rounded-lg border border-emerald-100">
+                            <div>
+                                <div class="font-medium text-emerald-900">${p.nome}</div>
+                                <div class="text-xs text-emerald-600">${p.desc}</div>
+                            </div>
+                            <div class="font-bold text-emerald-700 font-mono">${formatMoney(p.valor)}</div>
+                        </div>
+                    `).join('')}
+                    
+                    ${descontos.length > 0 ? '<div class="border-t border-slate-200 my-3"></div>' : ''}
+                    
+                    ${descontos.map(d => `
+                        <div class="flex justify-between items-center p-3 bg-rose-50 rounded-lg border border-rose-100">
+                            <div>
+                                <div class="font-medium text-rose-900">${d.nome}</div>
+                                <div class="text-xs text-rose-600">${d.desc}</div>
+                            </div>
+                            <div class="font-bold text-rose-700 font-mono">- ${formatMoney(d.valor)}</div>
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+
+            // Resumo
+            const totalFerias = (feriasVencidas ? salario + (salario/3) : 0) + 
+                              (saldoFerias ? ((salario/12)*(Math.min(12, mesesTrabalhados%12||12))*1.333) : 0);
+            
+            document.getElementById('res-resumo-salario').textContent = formatMoney(saldoSalario);
+            document.getElementById('res-resumo-decimo').textContent = formatMoney((tipo !== 'com-justa') ? (salario/12)*mesesAno : 0);
+            document.getElementById('res-resumo-ferias').textContent = formatMoney(totalFerias);
+            document.getElementById('res-resumo-aviso').textContent = formatMoney(valorAviso);
+
+            // FGTS
+            document.getElementById('res-fgts-saldo').textContent = formatMoney(saldoFGTSEstimado);
+            document.getElementById('res-fgts-multa').textContent = formatMoney(multaFGTS);
+            document.getElementById('res-fgts-percentual').textContent = percentualMulta > 0 ? `(${percentualMultal}%)` : '(sem multa)';
+            document.getElementById('res-fgts-total').textContent = formatMoney(saldoFGTSEstimado + multaFGTS);
+
+            // Update dica
+            const dicas = {
+                'sem-justa': 'Em demissão sem justa causa, o empregado tem direito a 40% de multa sobre o saldo do FGTS e seguro-desemprego.',
+                'com-justa': 'Em justa causa, o empregado perde o direito a aviso prévio, multa do FGTS, seguro-desemprego e 13º/férias proporcionais.',
+                'pedido': 'Ao pedir demissão, o trabalhador perde a multa do FGTS e seguro-desemprego. Deve cumprir ou pagar o aviso prévio.',
+                'acordo': 'No acordo mútuo, a multa é de 20% (metade), aviso prévio de 15 dias, e saca metade do seguro-desemprego.',
+                'contrato': 'Fim de contrato por prazo determinado segue regras similares à demissão sem justa causa.'
+            };
+            document.getElementById('res-dica').textContent = dicas[tipo];
+        }
+
+        // Férias Calculator
+        function calcularFerias() {
+            const salario = parseFloat(document.getElementById('fer-salario').value) || 0;
+            const dias = parseInt(document.getElementById('fer-dias').value) || 30;
+            const abono = document.getElementById('fer-abono').checked;
+            const adiantar13 = document.getElementById('fer-adiantar').checked;
+            const mediaHE = parseFloat(document.getElementById('fer-he').value) || 0;
+            const mediaCom = parseFloat(document.getElementById('fer-comissoes').value) || 0;
+
+            if (!salario) {
+                alert('Informe o salário!');
+                return;
+            }
+
+            const remuneracao = salario + mediaHE + mediaCom;
+            const valorDiario = remuneracao / 30;
+            const valorFerias = valorDiario * dias;
+            const tercoConstitucional = valorFerias / 3;
+            
+            let proventos = [];
+            let totalProventos = valorFerias + tercoConstitucional;
+
+            proventos.push({ nome: `Férias (${dias} dias)`, valor: valorFerias });
+            proventos.push({ nome: '1/3 Constitucional', valor: tercoConstitucional });
+
+            // Abono pecuniário
+            if (abono) {
+                const diasVendidos = Math.min(10, 30 - dias);
+                if (diasVendidos > 0) {
+                    const valorAbono = (remuneracao / 30) * diasVendidos;
+                    const tercoAbono = valorAbono / 3;
+                    proventos.push({ nome: `Abono Pecuniário (${diasVendidos} dias)`, valor: valorAbono });
+                    proventos.push({ nome: '1/3 sobre Abono', valor: tercoAbono });
+                    totalProventos += valorAbono + tercoAbono;
+                }
+            }
+
+            // Adiantamento 13º
+            if (adiantar13) {
+                const adianto13 = remuneracao / 2;
+                proventos.push({ nome: 'Adiantamento 1ª Parcela 13º', valor: adianto13 });
+                totalProventos += adianto13;
+            }
+
+            // Descontos
+            const inss = calcularINSS(totalProventos);
+            const irrf = calcularIRRF(totalProventos - inss);
+
+            document.getElementById('fer-empty').classList.add('hidden');
+            document.getElementById('fer-resultado').classList.remove('hidden');
+
+            document.getElementById('fer-total-bruto').textContent = formatMoney(totalProventos);
+            document.getElementById('fer-total-descontos').textContent = formatMoney(inss + irrf);
+            document.getElementById('fer-total-liquido').textContent = formatMoney(totalProventos - inss - irrf);
+
+            const detalhamento = document.getElementById('fer-detalhamento');
+            detalhamento.innerHTML = `
+                ${proventos.map(p => `
+                    <div class="flex justify-between items-center p-3 bg-emerald-50 rounded-lg">
+                        <span class="font-medium text-emerald-900">${p.nome}</span>
+                        <span class="font-bold text-emerald-700 font-mono">${formatMoney(p.valor)}</span>
+                    </div>
+                `).join('')}
+                <div class="border-t-2 border-slate-200 my-3"></div>
+                <div class="flex justify-between items-center p-3 bg-rose-50 rounded-lg">
+                    <div>
+                        <span class="font-medium text-rose-900">INSS</span>
+                        <span class="text-xs text-rose-600 ml-2">(${getAliquotaINSS(totalProventos)}%)</span>
+                    </div>
+                    <span class="font-bold text-rose-700 font-mono">-${formatMoney(inss)}</span>
+                </div>
+                ${irrf > 0 ? `
+                <div class="flex justify-between items-center p-3 bg-rose-50 rounded-lg">
+                    <div>
+                        <span class="font-medium text-rose-900">IRRF</span>
+                        <span class="text-xs text-rose-600 ml-2">(${getAliquotaIRRF(totalProventos - inss)}%)</span>
+                    </div>
+                    <span class="font-bold text-rose-700 font-mono">-${formatMoney(irrf)}</span>
+                </div>
+                ` : ''}
+            `;
+        }
+
+        // 13º Calculator
+        function calcularDecimo() {
+            const salario = parseFloat(document.getElementById('dec-salario').value) || 0;
+            const mesInicio = parseInt(document.getElementById('dec-mes-inicio').value) || 1;
+            const mesCalc = document.getElementById('dec-mes-calc').value;
+            const dependentes = parseInt(document.getElementById('dec-dependentes').value) || 0;
+
+            if (!salario) {
+                alert('Informe o salário!');
+                return;
+            }
+
+            let meses = 0;
+            if (mesCalc === '12') meses = 12 - mesInicio + 1;
+            else if (mesCalc === '11') meses = Math.min(11 - mesInicio + 1, 11);
+            else if (mesCalc === '5') meses = Math.min(5 - mesInicio + 1, 5);
+            
+            meses = Math.max(1, meses);
+
+            const bruto = (salario / 12) * meses;
+            const inss = calcularINSS(bruto);
+            const irrf = calcularIRRF(bruto - inss, dependentes);
+            const liquido = bruto - inss - irrf;
+
+            document.getElementById('dec-empty').classList.add('hidden');
+            document.getElementById('dec-resultado').classList.remove('hidden');
+
+            document.getElementById('dec-bruto').textContent = formatMoney(bruto);
+            document.getElementById('dec-proporcional').textContent = `${meses}/12 avos`;
+            document.getElementById('dec-descontos').textContent = formatMoney(inss + irrf);
+            document.getElementById('dec-liquido').textContent = formatMoney(liquido);
+
+            document.getElementById('dec-detalhamento').innerHTML = `
+                <div class="flex justify-between p-2 bg-slate-50 rounded">
+                    <span>Salário Base</span>
+                    <span class="font-mono">${formatMoney(salario)}</span>
+                </div>
+                <div class="flex justify-between p-2 bg-slate-50 rounded">
+                    <span>Proporcionalidade</span>
+                    <span class="font-mono">${meses}/12 avos</span>
+                </div>
+                <div class="flex justify-between p-2 bg-emerald-50 rounded text-emerald-700 font-medium">
+                    <span>Valor Bruto</span>
+                    <span class="font-mono">${formatMoney(bruto)}</span>
+                </div>
+                <div class="border-t border-slate-200 my-2"></div>
+                <div class="flex justify-between p-2 bg-rose-50 rounded text-rose-700">
+                    <span>INSS (${getAliquotaINSS(bruto)}%)</span>
+                    <span class="font-mono">-${formatMoney(inss)}</span>
+                </div>
+                ${irrf > 0 ? `
+                <div class="flex justify-between p-2 bg-rose-50 rounded text-rose-700">
+                    <span>IRRF (${getAliquotaIRRF(bruto - inss, dependentes)}%)</span>
+                    <span class="font-mono">-${formatMoney(irrf)}</span>
+                </div>
+                ` : ''}
+            `;
+        }
+
+        // Folha Calculator
+        function calcularFolha() {
+            const salario = parseFloat(document.getElementById('fol-salario').value) || 0;
+            const he50 = parseFloat(document.getElementById('fol-he-50').value) || 0;
+            const he100 = parseFloat(document.getElementById('fol-he-100').value) || 0;
+            const insalubridade = parseFloat(document.getElementById('fol-insalubridade').value) || 0;
+            const periculosidade = parseFloat(document.getElementById('fol-periculosidade').value) || 0;
+            const outros = parseFloat(document.getElementById('fol-outros').value) || 0;
+            const dependentes = parseInt(document.getElementById('fol-dependentes').value) || 0;
+
+            if (!salario) {
+                alert('Informe o salário base!');
+                return;
+            }
+
+            const valorHora = salario / 220;
+            const valorHE50 = he50 * (valorHora * 1.5);
+            const valorHE100 = he100 * (valorHora * 2);
+            
+            const valorInsalubridade = salario * (insalubridade / 100);
+            const valorPericulosidade = salario * (periculosidade / 100);
+
+            const proventos = [
+                { nome: 'Salário Base', valor: salario },
+                { nome: `Horas Extras 50% (${he50}h)`, valor: valorHE50, show: he50 > 0 },
+                { nome: `Horas Extras 100% (${he100}h)`, valor: valorHE100, show: he100 > 0 },
+                { nome: `Adicional Insalubridade (${insalubridade}%)`, valor: valorInsalubridade, show: insalubridade > 0 },
+                { nome: `Adicional Periculosidade (${periculosidade}%)`, valor: valorPericulosidade, show: periculosidade > 0 },
+                { nome: 'Outros Proventos', valor: outros, show: outros > 0 }
+            ].filter(p => p.show !== false);
+
+            const totalProventos = proventos.reduce((acc, p) => acc + p.valor, 0);
+            
+            const inss = calcularINSS(totalProventos);
+            const baseIRRF = totalProventos - inss;
+            const irrf = calcularIRRF(baseIRRF, dependentes);
+            const fgts = totalProventos * 0.08;
+
+            const descontos = [
+                { nome: 'INSS', valor: inss, aliquota: getAliquotaINSS(totalProventos) },
+                { nome: 'IRRF', valor: irrf, aliquota: getAliquotaIRRF(baseIRRF, dependentes), show: irrf > 0 }
+            ].filter(d => d.show !== false);
+
+            const totalDescontos = descontos.reduce((acc, d) => acc + d.valor, 0);
+            const liquido = totalProventos - totalDescontos;
+
+            document.getElementById('fol-empty').classList.add('hidden');
+            document.getElementById('fol-resultado').classList.remove('hidden');
+
+            const hoje = new Date();
+            document.getElementById('fol-mes-ano').textContent = hoje.toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' });
+
+            document.getElementById('fol-proventos-lista').innerHTML = proventos.map(p => `
+                <div class="flex justify-between py-1 border-b border-slate-100 last:border-0">
+                    <span class="text-slate-600">${p.nome}</span>
+                    <span class="font-mono text-emerald-600 font-medium">${formatMoney(p.valor)}</span>
+                </div>
+            `).join('');
+
+            document.getElementById('fol-descontos-lista').innerHTML = descontos.map(d => `
+                <div class="flex justify-between py-1 border-b border-slate-100 last:border-0">
+                    <span class="text-slate-600">${d.nome} (${d.aliquota}%)</span>
+                    <span class="font-mono text-rose-600 font-medium">-${formatMoney(d.valor)}</span>
+                </div>
+            `).join('');
+
+            document.getElementById('fol-total-proventos').textContent = formatMoney(totalProventos);
+            document.getElementById('fol-total-descontos').textContent = formatMoney(totalDescontos);
+            document.getElementById('fol-base-final').textContent = formatMoney(salario);
+            document.getElementById('fol-liquido-final').textContent = formatMoney(liquido);
+
+            document.getElementById('fol-base-inss').textContent = formatMoney(totalProventos);
+            document.getElementById('fol-aliquota-inss').textContent = `Alíquota: ${getAliquotaINSS(totalProventos)}%`;
+            document.getElementById('fol-base-irrf').textContent = formatMoney(baseIRRF);
+            document.getElementById('fol-aliquota-irrf').textContent = `Alíquota: ${getAliquotaIRRF(baseIRRF, dependentes)}%`;
+            document.getElementById('fol-fgts').textContent = formatMoney(fgts);
+        }
+
+        // Initialize with current date
+        document.addEventListener('DOMContentLoaded', () => {
+            const hoje = new Date();
+            const inicioAno = new Date(hoje.getFullYear(), 0, 1);
+            
+            document.getElementById('res-admissao').value = inicioAno.toISOString().split('T')[0];
+            document.getElementById('res-demissao').value = hoje.toISOString().split('T')[0];
+        });
+    </script>
+</body>
+</html>
